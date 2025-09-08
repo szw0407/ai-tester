@@ -1,10 +1,6 @@
 from PIL.ImageFile import ImageFile
-from google import genai
-from google.genai import types
 from PIL import Image
 from io import BytesIO
-import os
-
 from . import GeminiResponseGenerator
 
 class GeminiImageGenerator(GeminiResponseGenerator):
