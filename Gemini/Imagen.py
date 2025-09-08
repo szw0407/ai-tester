@@ -11,7 +11,7 @@ class GeminiImagenGenerator(GeminiResponseGenerator):
     def generate(self, prompt:str, config:GenerateImagesConfig=None) -> GenerateImagesResponse:
         return self.client.models.generate_images(
             model=self.model_name,
-            prompts=[prompt],
+            prompt=prompt,
             config=config
         )
 
