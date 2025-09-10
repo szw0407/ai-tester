@@ -20,3 +20,5 @@ class OllamaResponseGenerator:
             },
         ])
         return response.messages.content
+
+
