@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Send an image to a local Ollama vision model using the Python client and PIL (Pillow).
+Send an image to a local OllamaClient vision model using the Python client and PIL (Pillow).
 
 Prereqs:
-- Ollama installed and running: https://ollama.com
+- OllamaClient installed and running: https://ollama.com
 - A vision-capable model pulled (e.g., llava or llama3.2-vision):
     ollama pull llava
     # or
@@ -23,16 +23,39 @@ import os
 import sys
 from typing import Optional
 
-from PIL import Image
+import PIL
+from PIL.Image import Image
 import ollama
+import httpx
+import re
+import ftplib
+def load_image(path:str) ->Image:
+    if path.startswith("http"):
+        img = httpx.get(path)
+        img = PIL.Image.open(io.BytesIO(img.content))
+    elif path.startswith("ftp"):
+        parsed = httpx.URL(path)
+        ftp = ftplib.FTP(parsed.host)
+        ftp.login()
+        r = io.BytesIO()
+        ftp.retrbinary(f"RETR {parsed.path}", r.write)
+        r.seek(0)
+        img = PIL.Image.open(io.BytesIO(r.read()))
+        ftp.quit()
+    else:
+        # we think this is just a local file path
+        img = PIL.Image.open(path)
+    return img
 
 
-def encode_image_to_base64(image_path: str, max_size: Optional[int] = None) -> str:
+
+def encode_image_to_base64(img: Image,
+                            max_size: Optional[int] = None) -> str:
     """
     Load an image with PIL, optionally downscale, and return a Base64-encoded PNG string.
     Some models perform faster with reasonably sized inputs.
     """
-    img = Image.open(image_path)
+
 
     # Convert to RGB to avoid issues with modes like RGBA, P, etc.
     if img.mode not in ("RGB", "L"):
@@ -44,6 +67,7 @@ def encode_image_to_base64(image_path: str, max_size: Optional[int] = None) -> s
 
     buf = io.BytesIO()
     # Save to PNG in-memory for consistent encoding
-    img.save(buf, format="PNG")
+    img.save(buf, format="jpeg")
+    img.save("temp.png", format="PNG")
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     return b64
