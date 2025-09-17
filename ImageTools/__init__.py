@@ -49,21 +49,28 @@ def load_image(path:str) ->Image:
 
 
 
-def encode_image_to_base64(img: Image,
-                            max_size: Optional[int] = None) -> str:
+def encode_image_to_base64(img: Image| str,
+                            max_size: Optional[tuple[int, int]] = None) -> str:
     """
     Load an image with PIL, optionally downscale, and return a Base64-encoded PNG string.
     Some models perform faster with reasonably sized inputs.
     """
 
-
+    if isinstance(img, str) and max_size is None:
+        try:
+            with open(img, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        except:
+            pass
+    if isinstance(img, str):
+        img = load_image(img)
     # Convert to RGB to avoid issues with modes like RGBA, P, etc.
     if img.mode not in ("RGB", "L"):
         img = img.convert("RGB")
 
     # Optionally downscale the image to a maximum dimension (keeps aspect ratio)
     if max_size:
-        img.thumbnail((max_size, max_size), Image.LANCZOS)
+        img.thumbnail(max_size)
 
     buf = io.BytesIO()
     # Save to PNG in-memory for consistent encoding
