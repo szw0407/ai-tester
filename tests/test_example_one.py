@@ -12,7 +12,7 @@ from ImageTools import encode_image_to_base64
 gpt5 = ResponseGenerator("openai/gpt-5:online", base_url="https://openrouter.ai/api/v1")
 gemini_2_5_pro = ResponseGenerator("google/gemini-2.5-pro:online", base_url="https://openrouter.ai/api/v1")
 
-QUESTION = "This is a photo taken outside a museum in 浦河町. Some tourists want to visit the place to visit. They will visit the museum on Wednesday and leave immediately at the time the museum closes. Then they will go to the nearest bus transportation station immediately. We suggest that everything will go as expected including the train schedule and the museum opening hours and the expected walking duration. Please tell me the destination of the first bus to meet in the station. You need to search the Internet and find the answer and you can briefly introduce how you gained that information if you like."
+QUESTION = "This is a photo taken outside a museum in 浦河町. Some tourists want to visit the place to visit. They will visit the museum on Wednesday and leave immediately at the time the museum closes. Then they will go to the nearest bus transportation station immediately. We suggest that everything will go as expected including the bus schedule and the museum opening hours and the expected walking duration. Please tell me the destination of the first bus to meet in the station. You need to search the Internet and find the answer and you can briefly introduce how you gained that information if you like."
 
 base64_image=encode_image_to_base64("Images/image_one.png")
 # now we can test the GPT5 or Gemini performance in this problem
