@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-genai>=1.33.0",
+    "googlemaps>=4.10.0",
+    "mcp[cli]>=1.14.0",
     "ollama>=0.5.3",
     "openai>=1.106.1",
     "pillow>=11.3.0",
