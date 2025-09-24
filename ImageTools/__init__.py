@@ -1,35 +1,20 @@
-#!/usr/bin/env python3
+
 """
-Send an image to a local OllamaClient vision model using the Python client and PIL (Pillow).
-
-Prereqs:
-- OllamaClient installed and running: https://ollama.com
-- A vision-capable model pulled (e.g., llava or llama3.2-vision):
-    ollama pull llava
-    # or
-    ollama pull llama3.2-vision
-
-- Python deps:
-    pip install -r requirements.txt
-
-Usage:
-    python analyze_image.py /path/to/image.jpg --prompt "Describe this image" --model llava
-    python analyze_image.py /path/to/image.png --prompt "What text is visible?" --model llama3.2-vision --stream
+Some tools used to process images.
 """
 
 import base64
 import io
-import os
-import sys
+
 from typing import Optional
 
 import PIL
 from PIL.Image import Image
-import ollama
+
 import httpx
 import re
 import ftplib
-def load_image(path:str) ->Image:
+def load_image(path:str, max_size:Optional[tuple[int, int]] = None) ->Image:
     if path.startswith("http"):
         img = httpx.get(path)
         img = PIL.Image.open(io.BytesIO(img.content))
@@ -45,6 +30,12 @@ def load_image(path:str) ->Image:
     else:
         # we think this is just a local file path
         img = PIL.Image.open(path)
+    if img.mode not in ("RGB", "L"):
+        img = img.convert("RGB")
+
+    # Optionally downscale the image to a maximum dimension
+    if max_size is not None:
+        img = img.resize(max_size)
     return img
 
 
@@ -55,26 +46,11 @@ def encode_image_to_base64(img: Image| str,
     Load an image with PIL, optionally downscale, and return a Base64-encoded PNG string.
     Some models perform faster with reasonably sized inputs.
     """
-
-    if isinstance(img, str) and max_size is None:
-        try:
-            with open(img, "rb") as f:
-                return base64.b64encode(f.read()).decode("utf-8")
-        except:
-            pass
     if isinstance(img, str):
         img = load_image(img)
     # Convert to RGB to avoid issues with modes like RGBA, P, etc.
-    if img.mode not in ("RGB", "L"):
-        img = img.convert("RGB")
-
-    # Optionally downscale the image to a maximum dimension (keeps aspect ratio)
-    if max_size:
-        img.thumbnail(max_size)
-
     buf = io.BytesIO()
-    # Save to PNG in-memory for consistent encoding
+    # convert to JPEG, to make openai happy.
     img.save(buf, format="jpeg")
-    img.save("temp.png", format="PNG")
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     return b64
